@@ -7,6 +7,7 @@ import time
 from pymongo import MongoClient, GEOSPHERE
 import shapely.geometry
 import datetime
+import re
 
 
 with open('./conf.json', 'r') as f:
@@ -15,10 +16,18 @@ with open('./conf.json', 'r') as f:
 flickr = flickrapi.FlickrAPI(
     conf['api_key'], conf['api_secret'], format='parsed-json')
 
-client = MongoClient('localhost', 27017)
-db = eval('client.' + conf['database'])
-collection = eval('db.' + conf['collection'])
-collection.create_index([("geometry", GEOSPHERE)])
+if re.search(' ', conf['database']) is None and len(conf['database']) < 10:
+    if re.search(' ', conf['collection']) is None and len(conf['collection']) < 10:
+
+        client = MongoClient('localhost', 27017)
+        db = eval('client.' + conf['database'])
+        collection = eval('db.' + conf['collection'])
+        collection.create_index([("geometry", GEOSPHERE)])
+
+    else:
+        print('invalid collection name')
+else:
+    print('invalid database name')
 
 
 try:

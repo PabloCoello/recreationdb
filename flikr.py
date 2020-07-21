@@ -15,7 +15,7 @@ flickr = flickrapi.FlickrAPI(
     conf['api_key'], conf['api_secret'], format='parsed-json')
 
 client = MongoClient('localhost', 27017)
-db = client.geo
+db = client.flickr
 collection = db.location
 collection.create_index([("geometry", GEOSPHERE)])
 

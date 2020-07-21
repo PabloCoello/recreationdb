@@ -1,4 +1,6 @@
 {
+    "database":"flickr",
+    "collection":"photos",
     "bbox":"-11.811238,35.852175,8.369423,46.840323",
     "tags":"nature, forest, beach, water, tree, green, flowers, park, landscape, trees, lake, bird, bridge, river, wild, garden, outside, wildlife, woodland, woods",
     "api_key":"29222bf718a8d96ccb100cc8b340fbff",

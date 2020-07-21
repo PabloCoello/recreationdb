@@ -49,6 +49,7 @@ try:
         df = pd.DataFrame(toret)
         gdf = gpd.GeoDataFrame(
             matrix, geometry=gpd.points_from_xy(matrix.longitude.astype(float), matrix.latitude.astype(float)))
+        gdf['geometry']=gdf['geometry'].apply(lambda x:shapely.geometry.mapping(x))
         data = gdf.to_dict(orient='records')
         collection.insert_many(data)
 

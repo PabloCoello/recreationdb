@@ -6,6 +6,7 @@ import pandas as pd
 import time
 from pymongo import MongoClient, GEOSPHERE
 import shapely.geometry
+import datetime
 
 
 with open('./conf.json', 'r') as f:
@@ -15,8 +16,8 @@ flickr = flickrapi.FlickrAPI(
     conf['api_key'], conf['api_secret'], format='parsed-json')
 
 client = MongoClient('localhost', 27017)
-db = client.flickr
-collection = db.location
+db = eval('client.' + conf['database'])
+collection = eval('db.' + conf['collection'])
 collection.create_index([("geometry", GEOSPHERE)])
 
 
@@ -38,18 +39,19 @@ try:
         toret = defaultdict(list)
         for row in photos['photos']['photo']:
             toret['id'].append(row['id'])
-            toret['date'].append(row['datetaken'])
+            toret['date'].append(datetime.date.fromisoformat(row['datetaken']))
             toret['Title'].append(row['title'])
             toret['owner'].append(row['owner'])
             toret['owner_name'].append(row['owner_name'])
-            toret['views'].append(row['views'])
+            toret['views'].append(float(row['views']))
             toret['latitude'].append(row['latitude'])
             toret['longitude'].append(row['longitude'])
 
         df = pd.DataFrame(toret)
         gdf = gpd.GeoDataFrame(
             matrix, geometry=gpd.points_from_xy(matrix.longitude.astype(float), matrix.latitude.astype(float)))
-        gdf['geometry']=gdf['geometry'].apply(lambda x:shapely.geometry.mapping(x))
+        gdf['geometry'] = gdf['geometry'].apply(
+            lambda x: shapely.geometry.mapping(x))
         data = gdf.to_dict(orient='records')
         collection.insert_many(data)
 
@@ -66,4 +68,7 @@ try:
             counter = 0
 
 except KeyboardInterrupt:
-    client.close()
+    pass
+
+print('Last page:' + page)
+client.close()

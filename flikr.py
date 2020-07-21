@@ -42,7 +42,7 @@ try:
                                       has_geo=1,
                                       geo_context=2,
                                       extras='geo, views, date_taken, owner_name',
-                                      page=10,
+                                      page=page,
                                       per_page=500)
 
         toret = defaultdict(list)

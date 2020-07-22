@@ -10,7 +10,7 @@ import datetime
 import re
 
 
-with open('./conf.json', 'r') as f:
+with open('./santiago.json', 'r') as f:
     conf = json.load(f)
 
 flickr = flickrapi.FlickrAPI(
@@ -40,21 +40,24 @@ try:
                                       bbox=conf['bbox'],
                                       accuracy=12,
                                       has_geo=1,
-                                      geo_context=2,
+                                      geo_context=0,
                                       min_taken_date=conf['from_date'],
                                       max_taken_date=conf['to_date'],
-                                      extras='geo, views, date_taken, owner_name, description, tags, url_q'
-                                      page=1,
+                                      extras='geo, views, date_taken, owner_name, description, tags, url_q',
+                                      page=page,
                                       per_page=500)
+        if len(photos['photos']['photo']) == 0:
+            break
 
         toret = defaultdict(list)
         for row in photos['photos']['photo']:
             toret['id'].append(row['id'])
-            toret['date'].append(datetime.date.fromisoformat(row['datetaken']))
+            toret['date'].append(datetime.datetime.strptime(
+                row['datetaken'], "%Y-%m-%d %H:%M:%S"))
             toret['Title'].append(row['title'])
             toret['tags'].append(row['tags'])
             toret['owner'].append(row['owner'])
-            toret['owner_name'].append(row['owner_name'])
+            toret['owner_name'].append(row['ownername'])
             toret['views'].append(float(row['views']))
             toret['url'].append(row['url_q'])
             toret['latitude'].append(row['latitude'])
@@ -62,16 +65,16 @@ try:
 
         df = pd.DataFrame(toret)
         gdf = gpd.GeoDataFrame(
-            matrix, geometry=gpd.points_from_xy(matrix.longitude.astype(float), matrix.latitude.astype(float)))
+            df, geometry=gpd.points_from_xy(df.longitude.astype(float), df.latitude.astype(float)))
         gdf['geometry'] = gdf['geometry'].apply(
             lambda x: shapely.geometry.mapping(x))
         data = gdf.to_dict(orient='records')
         collection.insert_many(data)
 
         page += 1
-        init = len(photos['photos']['photo'])
         counter += init
         records += init
+        init = len(photos['photos']['photo'])
 
         print(records)
 
@@ -83,5 +86,5 @@ try:
 except KeyboardInterrupt:
     pass
 
-print('Last page:' + page)
+print('Last page:' + str(page))
 client.close()

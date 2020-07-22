@@ -1,8 +1,8 @@
 {
-    "database":"flickr",
-    "collection":"photos",
-    "bbox":"-11.811238,35.852175,8.369423,46.840323",
-    "tags":"nature, forest, beach, water, tree, green, flowers, park, landscape, trees, lake, bird, bridge, river, wild, garden, outside, wildlife, woodland, woods",
-    "api_key":"29222bf718a8d96ccb100cc8b340fbff",
-    "api_secret":"773ddbdab9c8fcb2"
+    "database":"name of the database in mongodb database",
+    "collection":"name of the collection in mongodb database",
+    "bbox":"coordinates boundaries",
+    "tags":"tags to search for",
+    "api_key":"your api secret",
+    "api_secret":"your api key"
 }

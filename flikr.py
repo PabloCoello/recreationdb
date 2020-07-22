@@ -41,6 +41,8 @@ try:
                                       accuracy=12,
                                       has_geo=1,
                                       geo_context=2,
+                                      min_taken_date=conf['from_date'],
+                                      max_taken_date=conf['to_date'],
                                       extras='geo, views, date_taken, owner_name, description, tags, url_q'
                                       page=1,
                                       per_page=500)

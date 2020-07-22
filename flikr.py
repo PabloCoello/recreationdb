@@ -41,8 +41,8 @@ try:
                                       accuracy=12,
                                       has_geo=1,
                                       geo_context=2,
-                                      extras='geo, views, date_taken, owner_name',
-                                      page=page,
+                                      extras='geo, views, date_taken, owner_name, description, tags, url_q'
+                                      page=1,
                                       per_page=500)
 
         toret = defaultdict(list)
@@ -50,9 +50,11 @@ try:
             toret['id'].append(row['id'])
             toret['date'].append(datetime.date.fromisoformat(row['datetaken']))
             toret['Title'].append(row['title'])
+            toret['tags'].append(row['tags'])
             toret['owner'].append(row['owner'])
             toret['owner_name'].append(row['owner_name'])
             toret['views'].append(float(row['views']))
+            toret['url'].append(row['url_q'])
             toret['latitude'].append(row['latitude'])
             toret['longitude'].append(row['longitude'])
 

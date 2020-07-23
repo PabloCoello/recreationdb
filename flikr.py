@@ -87,4 +87,5 @@ except KeyboardInterrupt:
     pass
 
 print('Last page:' + str(page))
+print('Total records:' + str(records))
 client.close()

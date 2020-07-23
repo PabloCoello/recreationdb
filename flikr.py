@@ -16,8 +16,8 @@ with open('./santiago.json', 'r') as f:
 flickr = flickrapi.FlickrAPI(
     conf['api_key'], conf['api_secret'], format='parsed-json')
 
-if re.search(' ', conf['database']) is None and len(conf['database']) < 10:
-    if re.search(' ', conf['collection']) is None and len(conf['collection']) < 10:
+if re.search(' ', conf['database']) is None and len(conf['database']) < 20:
+    if re.search(' ', conf['collection']) is None and len(conf['collection']) < 20:
 
         client = MongoClient('localhost', 27017)
         db = eval('client.' + conf['database'])

@@ -13,10 +13,10 @@ import datetime
 import sys
 
 
-
 class retrieve_data():
     '''
     '''
+
     def __init__(self, path):
         '''
         '''
@@ -36,11 +36,10 @@ class retrieve_data():
                 self.collection.insert_many(data)
                 self.set_record(path)
                 self.print_status(photos)
-                
-                if counter > 2900:
-                    print('waiting one hour')
+
+                if self.counter > 2900:
                     time.sleep(3650)
-                    counter = 0
+                    self.counter = 0
 
         except KeyboardInterrupt:
             pass
@@ -48,20 +47,18 @@ class retrieve_data():
         print('Last page:' + str(self.conf['page']))
         print('Total records:' + str(self.records))
         self.close_mongodb_con()
-    
+
     def get_conf(self, path):
         '''
         '''
         with open(path, 'r') as f:
             self.conf = json.load(f)
 
-
     def set_flickr_con(self):
         '''
         '''
         self.flickr = flickrapi.FlickrAPI(
             self.conf['api_key'], self.conf['api_secret'], format='parsed-json')
-
 
     def set_mongodb_con(self):
         '''
@@ -79,28 +76,25 @@ class retrieve_data():
         else:
             print('invalid database name')
 
-
     def close_mongodb_con(self):
         '''
         '''
         self.client.close()
-        
-        
+
     def get_flickr_photos(self):
         '''
         '''
         photos = self.flickr.photos.search(tags=self.conf['tags'],
-                            bbox=self.conf['bbox'],
-                            accuracy=12,
-                            has_geo=1,
-                            geo_context=0,
-                            min_taken_date=self.conf['from_date'],
-                            max_taken_date=self.conf['to_date'],
-                            extras='geo, views, date_taken, owner_name, description, tags, url_q',
-                            page=self.conf['page'],
-                            per_page=500)
+                                           bbox=self.conf['bbox'],
+                                           accuracy=12,
+                                           has_geo=1,
+                                           geo_context=0,
+                                           min_taken_date=self.conf['from_date'],
+                                           max_taken_date=self.conf['to_date'],
+                                           extras='geo, views, date_taken, owner_name, description, tags, url_q',
+                                           page=self.conf['page'],
+                                           per_page=500)
         return photos
-        
 
     def get_data(self, photos):
         '''
@@ -128,7 +122,6 @@ class retrieve_data():
         data = gdf.to_dict(orient='records')
         return data
 
-
     def print_status(self, photos):
         '''
         '''
@@ -136,17 +129,17 @@ class retrieve_data():
         self.counter += self.init
         self.records += self.init
         self.init = len(photos['photos']['photo'])
-        print(now.day+ '-' + now.month +'-' + now.year + ' ' + now.hour +':'+now.minute+':'+now.second+'. Number of records: '+self.records)
+        print(str(now.day) + '-' + str(now.month) + '-' + str(now.year) + ' ' + str(now.hour) +
+              ':'+str(now.minute)+':'+str(now.second)+'. Number of records: '+str(self.records))
 
-                
     def set_record(self, path):
         '''
         '''
         self.conf['page'] += 1
         with open('./alto_mino.json', 'w') as f:
-            json.dump(self.conf, f, indent = 4)
+            json.dump(self.conf, f, indent=4)
 
 
 if __name__ == '__main__':
     warnings.filterwarnings("ignore")
-    retrieve_data(path=sys.argv[1])
+    retrieve_data(path=str(sys.argv[1]))

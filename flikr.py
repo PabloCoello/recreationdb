@@ -8,9 +8,10 @@ from pymongo import MongoClient, GEOSPHERE
 import shapely.geometry
 import datetime
 import re
+import warnings
 
-
-with open('./santiago.json', 'r') as f:
+warnings.filterwarnings("ignore")
+with open('./epyris.json', 'r') as f:
     conf = json.load(f)
 
 flickr = flickrapi.FlickrAPI(
@@ -33,7 +34,7 @@ else:
 try:
     init = 1
     counter = 0
-    page = 1
+    page = 7204
     records = 0
     while init > 0:
         photos = flickr.photos.search(tags=conf['tags'],
@@ -77,6 +78,10 @@ try:
         init = len(photos['photos']['photo'])
 
         print(records)
+        
+        conf['page'] = page
+        with open('./epyris.json') as f:
+            json.dump(conf, f, indent = 4)
 
         if counter > 2900:
             print('waiting one hour')

@@ -10,6 +10,7 @@ import datetime
 import re
 import warnings
 import datetime
+import sys
 
 
 
@@ -19,20 +20,20 @@ class retrieve_data():
     def __init__(self, path):
         '''
         '''
-        self.get_conf()
+        self.get_conf(path)
         self.set_flickr_con()
         self.set_mongodb_con()
         try:
             self.init = 1
             self.counter = 0
             self.records = 0
-            while init > 0:
-                photos = self.get_flickr_photos(page)
+            while self.init > 0:
+                photos = self.get_flickr_photos()
                 if len(photos['photos']['photo']) == 0:
                     break
 
                 data = self.get_data(photos)
-                collection.insert_many(data)
+                self.collection.insert_many(data)
                 self.set_record(path)
                 self.print_status(photos)
                 
@@ -44,8 +45,8 @@ class retrieve_data():
         except KeyboardInterrupt:
             pass
 
-        print('Last page:' + str(page))
-        print('Total records:' + str(records))
+        print('Last page:' + str(self.conf['page']))
+        print('Total records:' + str(self.records))
         self.close_mongodb_con()
     
     def get_conf(self, path):
@@ -85,7 +86,7 @@ class retrieve_data():
         self.client.close()
         
         
-    def get_flickr_photos(self, page):
+    def get_flickr_photos(self):
         '''
         '''
         photos = self.flickr.photos.search(tags=self.conf['tags'],
@@ -148,5 +149,4 @@ class retrieve_data():
 
 if __name__ == '__main__':
     warnings.filterwarnings("ignore")
-    path = 'path'
-    retrieve_data(path)
+    retrieve_data(path=sys.argv[1])

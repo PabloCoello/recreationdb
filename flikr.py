@@ -11,7 +11,7 @@ import re
 import warnings
 
 warnings.filterwarnings("ignore")
-with open('./epyris.json', 'r') as f:
+with open('./alto_mino.json', 'r') as f:
     conf = json.load(f)
 
 flickr = flickrapi.FlickrAPI(
@@ -34,7 +34,7 @@ else:
 try:
     init = 1
     counter = 0
-    page = 7204
+    page = conf['page']
     records = 0
     while init > 0:
         photos = flickr.photos.search(tags=conf['tags'],
@@ -81,7 +81,7 @@ try:
         print(records)
         
         conf['page'] = page
-        with open('./epyris.json') as f:
+        with open('./alto_mino.json', 'w') as f:
             json.dump(conf, f, indent = 4)
 
         if counter > 2900:

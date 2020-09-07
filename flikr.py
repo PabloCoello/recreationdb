@@ -9,47 +9,101 @@ import shapely.geometry
 import datetime
 import re
 import warnings
-
-warnings.filterwarnings("ignore")
-with open('./alto_mino.json', 'r') as f:
-    conf = json.load(f)
-
-flickr = flickrapi.FlickrAPI(
-    conf['api_key'], conf['api_secret'], format='parsed-json')
-
-if re.search(' ', conf['database']) is None and len(conf['database']) < 20:
-    if re.search(' ', conf['collection']) is None and len(conf['collection']) < 20:
-
-        client = MongoClient('localhost', 27017)
-        db = eval('client.' + conf['database'])
-        collection = eval('db.' + conf['collection'])
-        collection.create_index([("geometry", GEOSPHERE)])
-
-    else:
-        print('invalid collection name')
-else:
-    print('invalid database name')
+import datetime
 
 
-try:
-    init = 1
-    counter = 0
-    page = conf['page']
-    records = 0
-    while init > 0:
-        photos = flickr.photos.search(tags=conf['tags'],
-                                      bbox=conf['bbox'],
-                                      accuracy=12,
-                                      has_geo=1,
-                                      geo_context=0,
-                                      min_taken_date=conf['from_date'],
-                                      max_taken_date=conf['to_date'],
-                                      extras='geo, views, date_taken, owner_name, description, tags, url_q',
-                                      page=page,
-                                      per_page=500)
-        if len(photos['photos']['photo']) == 0:
-            break
 
+class retrieve_data():
+    '''
+    '''
+    def __init__(self, path):
+        '''
+        '''
+        self.get_conf()
+        self.set_flickr_con()
+        self.set_mongodb_con()
+        try:
+            self.init = 1
+            self.counter = 0
+            self.records = 0
+            while init > 0:
+                photos = self.get_flickr_photos(page)
+                if len(photos['photos']['photo']) == 0:
+                    break
+
+                data = self.get_data(photos)
+                collection.insert_many(data)
+                self.set_record(path)
+                self.print_status(photos)
+                
+                if counter > 2900:
+                    print('waiting one hour')
+                    time.sleep(3650)
+                    counter = 0
+
+        except KeyboardInterrupt:
+            pass
+
+        print('Last page:' + str(page))
+        print('Total records:' + str(records))
+        self.close_mongodb_con()
+    
+    def get_conf(self, path):
+        '''
+        '''
+        with open(path, 'r') as f:
+            self.conf = json.load(f)
+
+
+    def set_flickr_con(self):
+        '''
+        '''
+        self.flickr = flickrapi.FlickrAPI(
+            self.conf['api_key'], self.conf['api_secret'], format='parsed-json')
+
+
+    def set_mongodb_con(self):
+        '''
+        '''
+        if re.search(' ', self.conf['database']) is None and len(self.conf['database']) < 20:
+            if re.search(' ', self.conf['collection']) is None and len(self.conf['collection']) < 20:
+
+                self.client = MongoClient('localhost', 27017)
+                db = eval('self.client.' + self.conf['database'])
+                self.collection = eval('db.' + self.conf['collection'])
+                self.collection.create_index([("geometry", GEOSPHERE)])
+
+            else:
+                print('invalid collection name')
+        else:
+            print('invalid database name')
+
+
+    def close_mongodb_con(self):
+        '''
+        '''
+        self.client.close()
+        
+        
+    def get_flickr_photos(self, page):
+        '''
+        '''
+        photos = self.flickr.photos.search(tags=self.conf['tags'],
+                            bbox=self.conf['bbox'],
+                            accuracy=12,
+                            has_geo=1,
+                            geo_context=0,
+                            min_taken_date=self.conf['from_date'],
+                            max_taken_date=self.conf['to_date'],
+                            extras='geo, views, date_taken, owner_name, description, tags, url_q',
+                            page=self.conf['page'],
+                            per_page=500)
+        return photos
+        
+
+    def get_data(self, photos):
+        '''
+        '''
         toret = defaultdict(list)
         for row in photos['photos']['photo']:
             toret['id'].append(row['id'])
@@ -71,27 +125,28 @@ try:
         gdf['geometry'] = gdf['geometry'].apply(
             lambda x: shapely.geometry.mapping(x))
         data = gdf.to_dict(orient='records')
-        collection.insert_many(data)
+        return data
 
-        page += 1
-        counter += init
-        records += init
-        init = len(photos['photos']['photo'])
 
-        print(records)
-        
-        conf['page'] = page
+    def print_status(self, photos):
+        '''
+        '''
+        now = datetime.datetime.now()
+        self.counter += self.init
+        self.records += self.init
+        self.init = len(photos['photos']['photo'])
+        print(now.day+ '-' + now.month +'-' + now.year + ' ' + now.hour +':'+now.minute+':'+now.second+'. Number of records: '+self.records)
+
+                
+    def set_record(self, path):
+        '''
+        '''
+        self.conf['page'] += 1
         with open('./alto_mino.json', 'w') as f:
-            json.dump(conf, f, indent = 4)
+            json.dump(self.conf, f, indent = 4)
 
-        if counter > 2900:
-            print('waiting one hour')
-            time.sleep(3650)
-            counter = 0
 
-except KeyboardInterrupt:
-    pass
-
-print('Last page:' + str(page))
-print('Total records:' + str(records))
-client.close()
+if __name__ == '__main__':
+    warnings.filterwarnings("ignore")
+    path = 'path'
+    retrieve_data(path)

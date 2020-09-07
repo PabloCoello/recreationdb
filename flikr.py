@@ -63,6 +63,7 @@ try:
             toret['url'].append(row['url_q'])
             toret['latitude'].append(row['latitude'])
             toret['longitude'].append(row['longitude'])
+            toret['context'].append(row['context'])
 
         df = pd.DataFrame(toret)
         gdf = gpd.GeoDataFrame(
@@ -92,4 +93,5 @@ except KeyboardInterrupt:
     pass
 
 print('Last page:' + str(page))
+print('Total records:' + str(records))
 client.close()

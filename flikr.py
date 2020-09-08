@@ -136,7 +136,7 @@ class retrieve_data():
         '''
         '''
         self.conf['page'] += 1
-        with open('./alto_mino.json', 'w') as f:
+        with open(path, 'w') as f:
             json.dump(self.conf, f, indent=4)
 
 

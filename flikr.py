@@ -69,7 +69,7 @@ class retrieve_data():
                 self.client = MongoClient('localhost', 27017)
                 db = eval('self.client.' + self.conf['database'])
                 self.collection = eval('db.' + self.conf['collection'])
-                self.collection.create_index([("geometry", GEOSPHERE)])
+                self.collection.create_index({ "geometry": "2dsphere" })
 
             else:
                 print('invalid collection name')

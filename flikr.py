@@ -22,6 +22,7 @@ class retrieve_data():
         '''
         '''
         self.get_conf(path)
+        self.get_bbox()
         self.set_flickr_con()
         self.set_mongodb_con()
         try:
@@ -48,13 +49,20 @@ class retrieve_data():
         print('Last page:' + str(self.conf['page']))
         print('Total records:' + str(self.records))
         self.close_mongodb_con()
-        self.close_ssh_con()
+        if self.conf['ssh']:
+            self.close_ssh_con()
 
     def get_conf(self, path):
         '''
         '''
         with open(path, 'r') as f:
             self.conf = json.load(f)
+            
+    def get_bbox(self):
+        '''
+        '''
+        with open('./conf/countries_bbox.json', 'r') as f:
+            self.bbox = json.load(f)
 
     def set_flickr_con(self):
         '''
@@ -65,11 +73,12 @@ class retrieve_data():
     def set_mongodb_con(self):
         '''
         '''
-
-        self.ssh_client = SSHClient()
-        self.ssh_client.set_missing_host_key_policy(AutoAddPolicy())
-        self.ssh_client.connect(
-            self.conf['ssh_server'], username=self.conf['ssh_user'], password=self.conf['ssh_password'])
+        
+        if self.conf['ssh']:
+            self.ssh_client = SSHClient()
+            self.ssh_client.set_missing_host_key_policy(AutoAddPolicy())
+            self.ssh_client.connect(
+                self.conf['ssh_server'], username=self.conf['ssh_user'], password=self.conf['ssh_password'])
 
         if re.search(' ', self.conf['database']) is None and len(self.conf['database']) < 20:
             if re.search(' ', self.conf['collection']) is None and len(self.conf['collection']) < 20:
@@ -98,7 +107,7 @@ class retrieve_data():
         '''
         '''
         photos = self.flickr.photos.search(tags=self.conf['tags'],
-                                           bbox=self.conf['bbox'],
+                                           bbox=self.bbox[self.conf['country']][1],
                                            accuracy=12,
                                            has_geo=1,
                                            geo_context=0,

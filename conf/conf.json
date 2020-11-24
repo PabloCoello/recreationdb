@@ -1,8 +1,14 @@
 {
     "database":"name of the database in mongodb database",
     "collection":"name of the collection in mongodb database",
-    "bbox":"coordinates boundaries",
+    "country":"Country code",
     "tags":"tags to search for",
+    "from_date": "Unix timespamp",
+    "to_date": "Unix timestamp",
     "api_key":"your api secret",
-    "api_secret":"your api key"
+    "api_secret":"your api key",
+    "ssh":"",
+    "ssh_user":"",
+    "ssh_server":"",
+    "ssh_password":""
 }

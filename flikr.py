@@ -43,6 +43,7 @@ class retrieve_data():
                 if len(data.id.unique() >= 4000):
                     data = gdf.to_dict(orient='records')
                     self.collection.insert_many(data)
+                    self.reset_record()
                     break
 
                 if self.counter > 2900:
@@ -50,7 +51,9 @@ class retrieve_data():
                     self.counter = 0
 
         except KeyboardInterrupt:
-            pass
+            data = gdf.to_dict(orient='records')
+            self.collection.insert_many(data)
+            self.reset_record()
 
         print('Last page:' + str(self.conf['page']))
         print('Total records:' + str(self.records))
@@ -163,6 +166,13 @@ class retrieve_data():
         '''
         '''
         self.conf['page'] += 1
+        with open(path, 'w') as f:
+            json.dump(self.conf, f, indent=4)
+            
+    def reset_record(self, path):
+        '''
+        '''
+        self.conf['page'] = 0
         with open(path, 'w') as f:
             json.dump(self.conf, f, indent=4)
 

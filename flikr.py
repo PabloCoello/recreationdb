@@ -34,6 +34,7 @@ class retrieve_data():
             while self.init > 0:
                 photos = self.get_flickr_photos()
                 if len(photos['photos']['photo']) == 0:
+                    self.store_pipeline(data)
                     break
 
                 data = pd.concat([data ,self.get_data(photos)])
@@ -42,9 +43,7 @@ class retrieve_data():
                 self.print_status(photos)
                 
                 if len(data.id.unique() >= 4000):
-                    data = gdf.to_dict(orient='records')
-                    self.collection.insert_many(data)
-                    self.reset_record()
+                    self.store_pipeline(data)
                     break
 
                 if self.counter > 2900:
@@ -52,12 +51,9 @@ class retrieve_data():
                     self.counter = 0
 
         except KeyboardInterrupt:
-            data = gdf.to_dict(orient='records')
-            self.collection.insert_many(data)
-            self.reset_record()
+            self.store_pipeline(data)
 
-        print('Last page:' + str(self.conf['page']))
-        print('Total records:' + str(self.records))
+        
         self.close_mongodb_con()
         if self.conf['ssh']:
             self.close_ssh_con()
@@ -184,7 +180,16 @@ class retrieve_data():
     def store_data(self, data):
         data = gdf.to_dict(orient='records')
         self.collection.insert_many(data, ordered=False)
+        
+    def print_total_records(self):
+        print('Total records:' + str(self.collection.count()))
 
+    def store_pipeline(self,data):
+        self.store_data(data)
+        self.reset_record()
+        self.print_total_records()
+        
+        
 if __name__ == '__main__':
     warnings.filterwarnings("ignore")
     retrieve_data(path=str(sys.argv[1]))

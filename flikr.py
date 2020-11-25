@@ -107,12 +107,12 @@ class retrieve_data():
         '''
         '''
         photos = self.flickr.photos.search(tags=self.conf['tags'],
+                                           tag_mode='any',
                                            bbox=self.bbox[self.conf['country']][1],
-                                           accuracy=12,
-                                           has_geo=1,
                                            geo_context=0,
                                            min_taken_date=self.conf['from_date'],
                                            max_taken_date=self.conf['to_date'],
+                                           content_type=7,
                                            extras='geo, views, date_taken, owner_name, description, tags, url_q',
                                            page=self.conf['page'],
                                            per_page=500)

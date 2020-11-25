@@ -1,0 +1,15 @@
+{
+    "name": "recreationdb-env",
+    "settings": {
+		"terminal.integrated.shell.linux": "/bin/bash"
+	},
+	"build": {
+		"dockerfile": "Dockerfile",
+		"args": {
+			"VARIANT": "focal"
+		}
+	},
+	"extensions": [
+		"ms-python.python"
+	]
+}

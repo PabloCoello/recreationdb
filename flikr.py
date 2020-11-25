@@ -25,7 +25,6 @@ class retrieve_data():
         self.get_bbox()
         self.set_flickr_con()
         self.set_mongodb_con()
-        self.create_id_index()
         self.reset_record(path)
         try:
             self.init = 1
@@ -94,7 +93,7 @@ class retrieve_data():
                 db = eval('self.client.' + self.conf['database'])
                 self.collection = eval('db.' + self.conf['collection'])
                 self.collection.create_index([("geometry", GEOSPHERE)])
-
+                self.collection.create_index('id', unique=True)
             else:
                 print('invalid collection name')
         else:
@@ -174,15 +173,10 @@ class retrieve_data():
         with open(path, 'w') as f:
             json.dump(self.conf, f, indent=4)
 
-    def create_id_index(self):
-        '''
-        '''
-        if 'id' not in self.collection.list_indexes():
-            self.collection.create_index('id', unique=True)
-
     def store_data(self, data):
         '''
         '''
+        data = data.drop_duplicates('id')
         data = data.to_dict(orient='records')
         self.collection.insert_many(data, ordered=False)
 

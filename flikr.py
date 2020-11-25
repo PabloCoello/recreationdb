@@ -175,7 +175,15 @@ class retrieve_data():
         self.conf['page'] = 0
         with open(path, 'w') as f:
             json.dump(self.conf, f, indent=4)
-
+            
+    def create_id_index(self):
+        if 'id' not in self.collection.list_indexes():
+            self.collection.create_index('id', unique=True})
+            
+    def store_data(self, data):
+        data = gdf.to_dict(orient='records')
+        
+        self.collection.insert_many(data)
 
 if __name__ == '__main__':
     warnings.filterwarnings("ignore")

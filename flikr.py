@@ -25,6 +25,8 @@ class retrieve_data():
         self.get_bbox()
         self.set_flickr_con()
         self.set_mongodb_con()
+        self.create_id_index()
+        self.reset_record(path)
         try:
             self.init = 1
             self.counter = 0
@@ -33,17 +35,16 @@ class retrieve_data():
             while self.init > 0:
                 photos = self.get_flickr_photos()
                 if len(photos['photos']['photo']) == 0:
+                    self.store_pipeline(data)
                     break
 
-                data = pd.concat([data ,self.get_data(photos)])
-                
+                data = pd.concat([data, self.get_data(photos)])
+
                 self.set_record(path)
                 self.print_status(photos)
-                
-                if len(data.id.unique() >= 4000):
-                    data = gdf.to_dict(orient='records')
-                    self.collection.insert_many(data)
-                    self.reset_record()
+
+                if len(data.id.unique()) >= 4000:
+                    self.store_pipeline(data)
                     break
 
                 if self.counter > 2900:
@@ -51,12 +52,9 @@ class retrieve_data():
                     self.counter = 0
 
         except KeyboardInterrupt:
-            data = gdf.to_dict(orient='records')
-            self.collection.insert_many(data)
-            self.reset_record()
+            self.store_pipeline(data)
 
-        print('Last page:' + str(self.conf['page']))
-        print('Total records:' + str(self.records))
+        self.reset_record(path)
         self.close_mongodb_con()
         if self.conf['ssh']:
             self.close_ssh_con()
@@ -66,7 +64,7 @@ class retrieve_data():
         '''
         with open(path, 'r') as f:
             self.conf = json.load(f)
-            
+
     def get_bbox(self):
         '''
         '''
@@ -82,7 +80,7 @@ class retrieve_data():
     def set_mongodb_con(self):
         '''
         '''
-        
+
         if self.conf['ssh']:
             self.ssh_client = SSHClient()
             self.ssh_client.set_missing_host_key_policy(AutoAddPolicy())
@@ -168,13 +166,36 @@ class retrieve_data():
         self.conf['page'] += 1
         with open(path, 'w') as f:
             json.dump(self.conf, f, indent=4)
-            
+
     def reset_record(self, path):
         '''
         '''
-        self.conf['page'] = 0
+        self.conf['page'] = 1
         with open(path, 'w') as f:
             json.dump(self.conf, f, indent=4)
+
+    def create_id_index(self):
+        '''
+        '''
+        if 'id' not in self.collection.list_indexes():
+            self.collection.create_index('id', unique=True)
+
+    def store_data(self, data):
+        '''
+        '''
+        data = data.to_dict(orient='records')
+        self.collection.insert_many(data, ordered=False)
+
+    def print_total_records(self):
+        '''
+        '''
+        print('Total records:' + str(self.collection.count()))
+
+    def store_pipeline(self, data):
+        '''
+        '''
+        self.store_data(data)
+        self.print_total_records()
 
 
 if __name__ == '__main__':

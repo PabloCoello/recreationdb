@@ -25,6 +25,7 @@ class retrieve_data():
         self.get_bbox()
         self.set_flickr_con()
         self.set_mongodb_con()
+        self.create_id_index()
         try:
             self.init = 1
             self.counter = 0
@@ -182,8 +183,7 @@ class retrieve_data():
             
     def store_data(self, data):
         data = gdf.to_dict(orient='records')
-        
-        self.collection.insert_many(data)
+        self.collection.insert_many(data, ordered=False)
 
 if __name__ == '__main__':
     warnings.filterwarnings("ignore")

@@ -29,15 +29,21 @@ class retrieve_data():
             self.init = 1
             self.counter = 0
             self.records = 0
+            data = gpd.GeoDataFrame()
             while self.init > 0:
                 photos = self.get_flickr_photos()
                 if len(photos['photos']['photo']) == 0:
                     break
 
-                data = self.get_data(photos)
-                self.collection.insert_many(data)
+                data = pd.concat([data ,self.get_data(photos)])
+                
                 self.set_record(path)
                 self.print_status(photos)
+                
+                if len(data.id.unique() >= 4000):
+                    data = gdf.to_dict(orient='records')
+                    self.collection.insert_many(data)
+                    break
 
                 if self.counter > 2900:
                     time.sleep(3650)
@@ -141,8 +147,7 @@ class retrieve_data():
             df, geometry=gpd.points_from_xy(df.longitude.astype(float), df.latitude.astype(float)))
         gdf['geometry'] = gdf['geometry'].apply(
             lambda x: shapely.geometry.mapping(x))
-        data = gdf.to_dict(orient='records')
-        return data
+        return gdf
 
     def print_status(self, photos):
         '''

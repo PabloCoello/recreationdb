@@ -42,7 +42,7 @@ class retrieve_data():
                 self.set_record(path)
                 self.print_status(photos)
 
-                if len(data.id.unique()) >= 4000:
+                if len(data.id.unique()) >= 3000:
                     self.store_pipeline(data)
                     break
 
